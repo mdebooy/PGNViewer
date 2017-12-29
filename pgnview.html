@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <title>PGN Viewer</title>
+  <meta name="Author"                 content="M.N. de Booij" />
+  <meta name="Content"                content="PGN Viewer" />
+  <meta name="Keywords"               content="chess, pgn" />
+  <meta name="Robots"                 content="index, follow" />
+  <meta name="Title"                  content="PGN Viewer" />
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible"  content="IE=edge">
+  <meta name="viewport"               content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" media="all" href="../common/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="PGNViewer.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="../common/js/bootstrap.min.js"></script>
+  <script src="../common/js/jquery.dataTables.min.js"></script>
+  <script src="../common/js/dataTables.bootstrap.js"></script>
+  <script src="PGNViewer.js" type="application/javascript"></script>
+  <script src="PGNTabel.js" type="application/javascript"></script>
+</head>
+<body onload="pgnviewer();">
+  <div class="container uitslagen">
+    <div class="header col-md-offset-2">
+      <h1>PGN Viewer</h1>
+    </div>
+
+    <div class="row">
+      <div  class="col-md-12">
+        <div id="board">
+          <canvas id="schaken" width="330" height="400"></canvas>
+        </div>
+        <div id="partijinfo_wrapper">
+          <div id="hoofding"></div>
+          <div id="partijinfo"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div  class="col-md-12">
+        <table id="partijenTab" class="table table-condensed"></table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
