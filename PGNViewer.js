@@ -50,7 +50,7 @@ var fen = '',
 var canvas = null,
     ctx = null,
     document = null,
-    knophoogte = 16,
+    knophoogte = 22,
     teksthoogte = 20,
     stukken = null;
 
@@ -65,9 +65,7 @@ var plyTab,
 function bepaalGebied(ev) {
   var rect = canvas.getBoundingClientRect();
   var x = ev.clientX - rect.left, 
-    y = ev.clientY - rect.top;
-  //var x = ev.layerX - knophoogte,
-  //  y = ev.layerY;
+      y = ev.clientY - rect.top;
   if (y >= RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte
     && y <= RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte + knophoogte) {
     // Draai bord?
@@ -78,13 +76,13 @@ function bepaalGebied(ev) {
       // Naar eerste zet?
     else if (x >= RAND_LINKS + 4 * VELD_GROOTTE - 2 * knophoogte - 4
       && x <= RAND_LINKS + 4 * VELD_GROOTTE - 2 * knophoogte - 4 + knophoogte
-      && halvezet >= 0) {
+      && halvezet >= 1) {
       return 'eerste';
     }
       // Vorige zet?
     else if (x >= RAND_LINKS + 4 * VELD_GROOTTE - knophoogte - 2
       && x <= RAND_LINKS + 4 * VELD_GROOTTE - knophoogte - 2 + knophoogte
-      && halvezet >= 0) {
+      && halvezet >= 1) {
       return 'vorige';
     }
       // Volgende zet?
@@ -295,7 +293,7 @@ function naarHalvezet(ply) {
   signaalVeld(veldVan);
   signaalVeld(veldNaar);
   ctx.fillStyle = "#fff";
-  ctx.fillRect(10 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + teksthoogte - 2, 100, teksthoogte - 2);
+  ctx.fillRect(5 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + teksthoogte, 95, teksthoogte - 2);
   ctx.fillStyle = "#000";
   if (ply >= 0) {
     var laatsteZet = "";
@@ -303,7 +301,7 @@ function naarHalvezet(ply) {
       laatsteZet += Math.round(i/2) + "...";
     }
     laatsteZet += plyTab[i].ply;
-    printTekst(laatsteZet, 15 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + 2 * knophoogte - 2);
+    printTekst(laatsteZet, 10 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + 2 * knophoogte - 10);
     kleurZet(halvezet, true);
   }
   zetInZicht(halvezet);
