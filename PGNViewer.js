@@ -17,7 +17,7 @@
  * @author Marco de Booij
  * @author Nico Vanwonterghem
  * 
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 // Vaste waardes.
