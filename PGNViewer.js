@@ -17,15 +17,13 @@
  * @author Marco de Booij
  * @author Nico Vanwonterghem
  * 
- * @version 1.0.1
+ * @version 2.0.0
  */
 
 // Vaste waardes.
-var LIJNEN = 'ABCDEFGH',
-    FEN = 'rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR',
-    RAND_BOVEN = 32,
+var FEN = 'rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR',
+    RAND_BOVEN = 5,
     RAND_LINKS = 14,
-    RIJEN = '87654321',
     STUKKEN = 'kqrbnp.PNBRQK',
     VELD_GROOTTE = 38,
     VELD_WIT = '#fff',
@@ -33,7 +31,7 @@ var LIJNEN = 'ABCDEFGH',
 
 // Partij variabelen.
 var fen = '',
-    halvezet = 0,
+    halvezet = -1,
     pgn = '',
     stelling = new Array(),
     witonder = 1,
@@ -50,84 +48,41 @@ var fen = '',
 var canvas = null,
     ctx = null,
     document = null,
-    knophoogte = 22,
+    knophoogte = 48,
     teksthoogte = 20,
     stukken = null;
 
 // Bord variabelen.
-var rijen = RIJEN,
-    lijnen = LIJNEN,
-    bordbreedte = 8 * VELD_GROOTTE;
+var bordbreedte = 8 * VELD_GROOTTE;
 
 var plyTab,
     json;
-
-function bepaalGebied(ev) {
-  var rect = canvas.getBoundingClientRect();
-  var x = ev.clientX - rect.left, 
-      y = ev.clientY - rect.top;
-  if (y >= RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte
-    && y <= RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte + knophoogte) {
-    // Draai bord?
-    if (x >= RAND_LINKS + 7 * VELD_GROOTTE + 4
-      && x <= RAND_LINKS + 7 * VELD_GROOTTE + 4 + knophoogte) {
-      return 'draaibord';
-    }
-      // Naar eerste zet?
-    else if (x >= RAND_LINKS + 4 * VELD_GROOTTE - 2 * knophoogte - 4
-      && x <= RAND_LINKS + 4 * VELD_GROOTTE - 2 * knophoogte - 4 + knophoogte
-      && halvezet >= 1) {
-      return 'eerste';
-    }
-      // Vorige zet?
-    else if (x >= RAND_LINKS + 4 * VELD_GROOTTE - knophoogte - 2
-      && x <= RAND_LINKS + 4 * VELD_GROOTTE - knophoogte - 2 + knophoogte
-      && halvezet >= 1) {
-      return 'vorige';
-    }
-      // Volgende zet?
-    else if (x >= RAND_LINKS + 4 * VELD_GROOTTE + 2
-      && x <= RAND_LINKS + 4 * VELD_GROOTTE + 2 + knophoogte
-      && halvezet < (zetten.length - 1)) {
-      return 'volgende';
-    }
-      // Naar laatste zet?
-    else if (x >= RAND_LINKS + 4 * VELD_GROOTTE + knophoogte + 4
-      && x <= RAND_LINKS + 4 * VELD_GROOTTE + knophoogte + 4 + knophoogte
-      && halvezet < (zetten.length - 1)) {
-      return 'laatste';
-    }
-  }
-}
 
 /**
  * Verander de positie op het bord naar de aangeklikte zet
  */
 function bepaalPly() {
   var partijZetten = document.getElementsByClassName("sleeping");
-  for (i = 0; i < partijZetten.length; i++) {
+  for (var i = 0; i < partijZetten.length; i++) {
     partijZetten[i].onclick = function () {
-      for (i = 0; i < zetten.length; i++) { 
-        kleurZet(i, false);
+      for (var j = 0; j < zetten.length; j++) {
+        kleurZet(j, false);
       }
       halvezet = this.id;
       kleurZet(halvezet, true);
-      naarHalvezet(halvezet); 
+      naarHalvezet(halvezet);
     }
   }
 }
 
-function buttons(ev) {
-  var gebied = bepaalGebied(ev);
-  switch (gebied) {
-    case 'draaibord':
-    case 'eerste':
-    case 'vorige':
-    case 'volgende':
-    case 'laatste':
-      canvas.style.cursor = "pointer";
-      break;   
-    default: canvas.style.cursor = "default";
+/* bepaalt welke cursor er getoond wordt,
+ * naargelang het veld aanklikbaar is of niet
+*/
+function buttons(id) {  
+  if (klikbaar(id)) { 
+    knoppen.style.cursor = "pointer";
+  } else {
+    knoppen.style.cursor = "default";
   }
 }
 
@@ -140,8 +95,8 @@ function doeZet(zet) {
       veld2 = -1;
 
   for (var i = 0; i < zet.length; i++) {
-    if (STUKKEN.indexOf(zet.substring(i, i+1)) >= 0) {
-      stelling[veld] = STUKKEN.indexOf(zet.substring(i, i+1)) - 6;
+    if (STUKKEN.indexOf(zet.substring(i, i + 1)) >= 0) {
+      stelling[veld] = STUKKEN.indexOf(zet.substring(i, i + 1)) - 6;
       if (veld1 == -1) {
         veld1 = veld;
       } else {
@@ -149,7 +104,7 @@ function doeZet(zet) {
       }
       veld++;
     } else {
-      leeg = parseInt(zet.substring(i));
+      var leeg = parseInt(zet.substring(i));
       if (leeg > 9) {
         i++;
       }
@@ -158,10 +113,10 @@ function doeZet(zet) {
   }
 
   // e.p. aanpassing van veld.
-  if (zet.indexOf("P6..") > 0 ) {
+  if (zet.indexOf("P6..") > 0) {
     veld2--;
   }
-  if (zet.indexOf("..6p") > 0 ) {
+  if (zet.indexOf("..6p") > 0) {
     veld1++;
   }
   // Korte zwarte rochade
@@ -185,7 +140,7 @@ function doeZet(zet) {
     veld2 = 58;
   }
 
-  return ""+veld1+","+veld2;
+  return "" + veld1 + "," + veld2;
 }
 
 /**
@@ -193,9 +148,7 @@ function doeZet(zet) {
  */
 function draaiBord() {
   witonder *= -1;
-  tekenKader("#fff");
-  reverseRijenLijnen();
-  tekenKader("#000");
+  reverseCoordinaten();
   tekenStelling();
   signaalVeld(veldVan);
   signaalVeld(veldNaar);
@@ -221,11 +174,35 @@ function getVeldKleur(iRij, iLijn) {
  */
 function kleurZet(zet, aktief) {
   var elem = document.getElementById(zet);
-  if (aktief) { 
-    elem.className = elem.className.replace("sleeping", "active");  
+  if (aktief) {
+    elem.className = elem.className.replace("sleeping", "active");
   } else {
-    elem.className = elem.className.replace("active", "sleeping");  
+    elem.className = elem.className.replace("active", "sleeping");
   }
+}
+
+/* controleert of een button aanklikbaar is,
+ * naargelang de positie op het bord
+*/
+function klikbaar(id) {
+  var klikbaar = false;
+  switch (id) {
+    case 'draaibord':
+      klikbaar = true;
+      break;
+    case 'eerste':
+    case 'vorige':
+      if (halvezet >= 0) {
+        klikbaar = true;
+      }
+      break;
+    case 'volgende':
+    case 'laatste':
+      if (halvezet < (zetten.length - 1)) {
+        klikbaar = true;
+      }
+  }
+  return klikbaar;
 }
 
 /**
@@ -238,9 +215,8 @@ function leegVeld(veld) {
 /**
  * Vang de muis klikken.
  */
-function muisklik(ev) {
-  var gebied = bepaalGebied(ev);
-  switch (gebied) {
+function muisklik(id) {  
+  switch (id) {
     case 'draaibord':
       draaiBord();
       break;
@@ -255,32 +231,33 @@ function muisklik(ev) {
       break;
     case 'laatste':
       navigeer(35);
-      break;     
-  }
+      break;
+  }   
 }
 
 /**
  * Vang de muiswiel bewegingen.
  */
 function muisWiel(ev) {
-    ev.preventDefault();
-    if (ev.deltaY < 0) {
-        navigeer(37);
-    } else {
-        navigeer(39);
-    }
+  ev.preventDefault();
+  if (ev.deltaY < 0) {
+    navigeer(37);
+  } else {
+    navigeer(39);
+  }
 }
 
 /**
  * Geef de stelling na de gevraagde halve zet.
  */
 function naarHalvezet(ply) {
+  var i;
   startPositie();
-  if (ply == -1 ) {
+  if (ply == -1) {
     veldVan = -1;
     veldNaar = -1;
   } else {
-    for (var i = 0; i < ply; i++) {
+    for (i = 0; i < ply; i++) {
       doeZet(zetten[i]);
     }
 
@@ -292,16 +269,17 @@ function naarHalvezet(ply) {
   tekenStelling();
   signaalVeld(veldVan);
   signaalVeld(veldNaar);
-  ctx.fillStyle = "#fff";
-  ctx.fillRect(5 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + teksthoogte, 95, teksthoogte - 2);
-  ctx.fillStyle = "#000";
+  laatsteHalveZet.style.visibility = "hidden";
   if (ply >= 0) {
     var laatsteZet = "";
-    if (i%2 == 1) {
-      laatsteZet += Math.round(i/2) + "...";
+    if (i % 2 == 1) {
+      laatsteZet += Math.round(i / 2) + "...";
     }
-    laatsteZet += plyTab[i].ply;
-    printTekst(laatsteZet, 10 + RAND_LINKS, RAND_BOVEN + 8 * VELD_GROOTTE + 2 * knophoogte - 10);
+    laatsteZet += plyTab[i].ply;     
+    laatsteHalveZet.style.visibility = "visible";
+    laatsteHalveZet.removeChild(laatsteHalveZet.firstChild);
+    laatsteHalveZet.appendChild(document.createTextNode(laatsteZet));
+    
     kleurZet(halvezet, true);
   }
   zetInZicht(halvezet);
@@ -312,7 +290,7 @@ function naarHalvezet(ply) {
  */
 function navigeer(aktie) {
   var accept = false;
-  switch(aktie) {
+  switch (aktie) {
     case 36:
       kleurZet(halvezet, false);
       halvezet = -1;
@@ -327,12 +305,12 @@ function navigeer(aktie) {
       break;
     case 39:
       if (halvezet < (zetten.length - 1)) {
-      if (halvezet >= 0) {
-        kleurZet(halvezet, false);
-      }
-      halvezet++;
-      naarHalvezet(halvezet);
-      accept = true;
+        if (halvezet >= 0) {
+          kleurZet(halvezet, false);
+        }
+        halvezet++;
+        naarHalvezet(halvezet);
+        accept = true;
       }
       break;
     case 35:
@@ -362,41 +340,52 @@ function partij(gamekey) {
       pgn = json[i]['_moves'].replace(/B/g, '♗').replace(/K/g, '♔').replace(/N/g, '♘').replace(/Q/g, '♕').replace(/R/g, '♖');
       zetten = json[i]['_pgnviewer'].split(' ');
       uitslag = json[i]['Result'].replace(/1\/2/g, "½");
-      datum = json[i]['Date'];
+      speeldatum = json[i]['Date'];
       eco = json[i]['ECO'];
     }
   }
-
-  startPositie();
-  tekenStelling();
-  schrijfPartijInfo();
+  if (!start) {     
+    tekenStelling();
+    schrijfPartijInfo();
+  }
+  
   halvezet = -1;
 }
 
 /**
  * Hoofdfunctie
  */
+var start = true;
 function pgnviewer() {
   canvas = document.getElementById('schaken');
-
   // Wordt canvas ondersteund?
   if (canvas.getContext) {
     ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.font = "12px 'Helvetica'";
+    ctx.clearRect(0, 0, canvas.width, canvas.height - RAND_BOVEN - knophoogte);
+    laatsteHalveZet.style.visibility = "hidden";
 
     $.getJSON('partijen.json', function (data) {
       json = data;
     })
-    startPositie();
-    stukken = new Image();
-    stukken.src = '../common/images/stukken.png';
-    stukken.onload = function () {
-      tekenStelling();
+    startPositie();     
+    if (start) {
+      stukken = new Image();
+      stukken.src = '../common/images/stukken.png';
+      stukken.onload = function () {               
+        tekenStelling();
+        $('#canvasBorder').toggle();
+        $('#witOnder').toggle();
+      }
+      start = false;
+      $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('mouseover', function () {
+        buttons(this.id);
+      });
+      $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('click', function () {
+        muisklik(this.id);
+      });                   
     }
-    tekenKnoppen();
-
-    canvas.addEventListener('click', muisklik, false);
-    canvas.addEventListener('mousemove', buttons, false);
+     
   } else {
     alert("Canvas wordt niet ondersteund!");
   }
@@ -414,42 +403,23 @@ function plaatsStukken() {
 }
 
 /**
- * Print de tekst 2x
+ * Draait de volgorde van de coordinaten om
  */
-function printTekst(tekst, x, y) {
-  ctx.fillText(tekst, x, y);
-  ctx.fillText(tekst, x, y);
-}
-
-/**
- * Draait de volgorde van de rijen en lijnen om
- */
-function reverseRijenLijnen() {
-  rijen = rijen.split('').reverse().join('');
-  lijnen = lijnen.split('').reverse().join('');
+function reverseCoordinaten() {
+  $('#witOnder').toggle();
+  $('#zwartOnder').toggle();
 }
 
 /**
  * Schrijf de speler informatie en de PGN op het scherm.
+ * 'spelers', 'wit' en 'zwart' zijn de id's van elementen in de html pagina
  */
-function schrijfPartijInfo() {
-  ctx.font = "12px 'Helvetica'";
-  ctx.linewidth = 1;
-
-  ctx.beginPath();
-  ctx.arc(RAND_LINKS / 2, 9, 4, Math.PI * 2, 0, true);
-  ctx.fillStyle = 'white';
-  ctx.fill();
-  ctx.closePath();
-  ctx.stroke();
-  ctx.fillStyle = 'black';
-  printTekst(witspeler, RAND_LINKS, 14);
-  ctx.beginPath();
-  ctx.arc(RAND_LINKS / 2, 22, 4, Math.PI * 2, 0, true);
-  ctx.fill();
-  ctx.closePath();
-  ctx.stroke();
-  printTekst(zwartspeler, RAND_LINKS, 27);
+function schrijfPartijInfo() { 
+  spelers.style.visibility = "visible";
+  wit.removeChild(wit.firstChild);
+  wit.appendChild(document.createTextNode(witspeler));
+  zwart.removeChild(zwart.firstChild);
+  zwart.appendChild(document.createTextNode(zwartspeler));
   wrapTekst(pgn);
 }
 
@@ -462,16 +432,16 @@ function signaalVeld(veld) {
   }
 
   var kleur = ctx.strokeStyle;
-  var x = veld%8;
-  var y = (veld-x)/8;
+  var x = veld % 8;
+  var y = (veld - x) / 8;
   if (witonder == -1) {
     x = 7 - x;
     y = 7 - y;
   }
   ctx.strokeStyle = "red";
   ctx.strokeRect(RAND_LINKS + x * VELD_GROOTTE + 1,
-                 RAND_BOVEN + y * VELD_GROOTTE + 1,
-                 VELD_GROOTTE-2, VELD_GROOTTE-2);
+           RAND_BOVEN + y * VELD_GROOTTE + 1,
+           VELD_GROOTTE - 2, VELD_GROOTTE - 2);
   ctx.strokeStyle = kleur;
 }
 
@@ -485,7 +455,7 @@ function startPositie() {
   }
 
   var veld = 0;
-  for (var i = 0; i < fen.length; i++) {
+  for (i = 0; i < fen.length; i++) {
     var teken = fen.substring(i, i + 1);
     var stuk = STUKKEN.indexOf(teken);
     if (stuk < 0) {
@@ -506,72 +476,23 @@ function startPositie() {
 /**
  * Teken het bord in het canvas.
  */
-function tekenBord() {
+function tekenBord(value) {
   for (var i = 0; i < 8; i++) {
     for (var j = 0; j < 8; j++) {
       tekenVeld(i, j);
     }
-  }
-  tekenKader("#000");
+  }   
 }
 
 /**
  * Teken het kader rond het bord
  */
-function tekenKader(kleur) {
+function tekenKader() {
+  ctx.lineWidth = 2;
   ctx.strokeRect(RAND_LINKS, RAND_BOVEN,
-           8 * VELD_GROOTTE,
-           8 * VELD_GROOTTE);
-
-  // Schrijf de coordinaten.
-  var font = ctx.font;
-  var textAlign = ctx.textAlign;
-  ctx.fillStyle = kleur;
-  ctx.font = "" + (RAND_LINKS / 2) + "px 'Helvetica'";
-  ctx.textAlign = 'center';
-  for (var i = 0; i < 8; i++) {
-    printTekst(rijen.substring(i, i + 1), RAND_LINKS / 2, RAND_BOVEN + VELD_GROOTTE / 1.9 + (VELD_GROOTTE * i));
-    printTekst(lijnen.substring(i, i + 1), RAND_LINKS + VELD_GROOTTE / 1.9 + (VELD_GROOTTE * i), RAND_BOVEN + (VELD_GROOTTE * 8.25));
-  }
-
-  ctx.font = font;
-  ctx.textAlign = textAlign;
-}
-
-/**
- * Teken de knoppen.
- */
-function tekenKnoppen() {
-  var knopBegin = new Image(),
-    knopEind = new Image(),
-    knopVolgend = new Image(),
-    knopVorig = new Image(),
-    knopDraai = new Image();
-  knopBegin.onload = function () {
-    ctx.drawImage(knopBegin, RAND_LINKS + 4 * VELD_GROOTTE - 2 * knophoogte - 4,
-            RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte);
-  };
-  knopEind.onload = function () {
-    ctx.drawImage(knopEind, RAND_LINKS + 4 * VELD_GROOTTE + knophoogte + 4,
-            RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte);
-  };
-  knopVolgend.onload = function () {
-    ctx.drawImage(knopVolgend, RAND_LINKS + 4 * VELD_GROOTTE + 2,
-            RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte);
-  };
-  knopVorig.onload = function () {
-    ctx.drawImage(knopVorig, RAND_LINKS + 4 * VELD_GROOTTE - knophoogte - 2,
-            RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte);
-  };
-  knopDraai.onload = function () {
-    ctx.drawImage(knopDraai, RAND_LINKS + 7 * VELD_GROOTTE + 4,
-            RAND_BOVEN + 8 * VELD_GROOTTE + knophoogte);
-  };
-  knopBegin.src = '../common/images/go-first.png';
-  knopEind.src = '../common/images/go-last.png';
-  knopVolgend.src = '../common/images/go-next.png';
-  knopVorig.src = '../common/images/go-previous.png';
-  knopDraai.src = '../common/images/view-refresh.png';
+       8 * VELD_GROOTTE,
+       8 * VELD_GROOTTE);  
+  ctx.lineWidth = 1;
 }
 
 /**
@@ -587,15 +508,15 @@ function tekenStelling() {
  */
 function tekenStuk(stuk, veld) {
   var x = (Math.abs(stuk) - 1) * VELD_GROOTTE,
-    y = ((stuk < 0) ? 0 : VELD_GROOTTE);
+      y = ((stuk < 0) ? 0 : VELD_GROOTTE);
   var lijn = veld % 8,
-    rij = (veld - lijn) / 8;
+      rij = (veld - lijn) / 8;
 
   ctx.drawImage(stukken, x, y,
-          VELD_GROOTTE, VELD_GROOTTE,
-          RAND_LINKS + lijn * VELD_GROOTTE,
-          RAND_BOVEN + rij * VELD_GROOTTE,
-          VELD_GROOTTE, VELD_GROOTTE);
+      VELD_GROOTTE, VELD_GROOTTE,
+      RAND_LINKS + lijn * VELD_GROOTTE,
+      RAND_BOVEN + rij * VELD_GROOTTE,
+      VELD_GROOTTE, VELD_GROOTTE);
 }
 
 /**
@@ -604,8 +525,8 @@ function tekenStuk(stuk, veld) {
 function tekenVeld(iRij, iLijn) {
   ctx.fillStyle = getVeldKleur(iRij, iLijn);
   ctx.fillRect(RAND_LINKS + iRij * VELD_GROOTTE,
-         RAND_BOVEN + iLijn * VELD_GROOTTE,
-         VELD_GROOTTE, VELD_GROOTTE);
+       RAND_BOVEN + iLijn * VELD_GROOTTE,
+       VELD_GROOTTE, VELD_GROOTTE);
   ctx.stroke();
 }
 
@@ -625,7 +546,7 @@ function wrapTekst(tekst) {
   resultaat.appendChild(document.createTextNode(uitslag));
   var date = document.createElement("span");
   date.id = "datum";
-  date.appendChild(document.createTextNode(datum));
+  date.appendChild(document.createTextNode(speeldatum));
   var ecoCode = document.createElement("span");
   ecoCode.id = "eco";
   ecoCode.appendChild(document.createTextNode(eco));
@@ -638,19 +559,19 @@ function wrapTekst(tekst) {
   while (div.firstChild) {
     div.removeChild(div.firstChild);
   }
-  for (var i = 0; i < ply.length; i++) {    
+  for (var i = 0; i < ply.length; i++) {
     var span = document.createElement("span");
     span.id = i;
     span.className = "sleeping moves";
     span.appendChild(document.createTextNode(ply[i]));
     div.appendChild(span);
     div.appendChild(document.createTextNode(" "));
- 
+
     //dit is voor het schrijven van de zet onderaan links van het bord
     //wordt dan gedaan in naarhalveZet() functie
     plyTab[i] = {
       ply: ply[i]
-    }      
+    }
   }
   div.appendChild(document.createElement("br"));
   var res = document.createElement("span");
@@ -667,22 +588,22 @@ function wrapTekst(tekst) {
 function zetInZicht(zet) {
   var container = document.getElementById("partijinfo");
   if (zet === -1) {
-      container.scrollTop = 0;
+    container.scrollTop = 0;
     return;
   }
   if (container.clientHeight < 355) {
     return;
   }
   var element = document.getElementById(zet);
-    
+
   //container top, bottom
   var cTop = container.scrollTop;
   var cBottom = cTop + container.clientHeight;
-
+  
   //element top, bottom
   var eTop = element.offsetTop - 46;
   var eBottom = eTop + element.clientHeight + 46;
-
+  
   //controle of in zicht
   if (eTop < cTop) {
     container.scrollTop -= (cTop - eTop + element.clientHeight);
@@ -691,4 +612,3 @@ function zetInZicht(zet) {
     container.scrollTop += (eBottom - cBottom + element.clientHeight);
   }
 }
-

@@ -1,19 +1,76 @@
-#partijenTab tr:hover{cursor:pointer;background-color:rgba(115,158,193,0.3)}
-#hoofding{padding-bottom: 7px;}
-#uitslag,#eco,#datum{display:inline-block;font-weight:700;}
-#uitslag {float:left;}
-#eco{float:right;}
-#datum{position:relative;left:32%;}
-.moves{display:inline-block;border-radius:3px;padding:0 1px 0 1px;}
-.sleeping{background-color:white;}
-.sleeping:hover{background-color:#F5EEC2;cursor:pointer;}
+﻿/**
+ * Copyright 2013 Marco de Booij
+ *
+ * Licensed under the EUPL, Version 1.1 or - as soon they will be approved by
+ * the European Commission - subsequent versions of the EUPL (the "Licence");
+ * you may not use this work except in compliance with the Licence. You may
+ * obtain a copy of the Licence at:
+ *
+ * http://www.osor.eu/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the Licence is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the Licence for the specific language governing permissions and
+ * limitations under the Licence.
+ *
+ * @author Marco de Booij
+ * @author Nico Vanwonterghem
+ * 
+ * @version 2.0.0
+ */
+#partijenTab tr:hover{cursor:pointer;background-color:rgba(115,158,193,0.2)}
+#partijenTab tr:checked{background-color:rgba(115,158,193,0.3)}
+#hoofding{padding-bottom:7px}
+#uitslag,#eco,#datum{display:inline-block;font-weight:700}
+#uitslag{float:left}
+#eco{float:right}
+#datum{position:relative;left:32%}
+.moves{display:inline-block;border-radius:3px;padding:0 1px 0 1px}
+.sleeping{background-color:white}
+.sleeping:hover{background-color:#F5EEC2;cursor:pointer}
 .active{background-color:rgba(115,158,193,0.5)}
-.active:hover{background-color:rgba(115,158,193,0.5);cursor:pointer;}
-#board{width: 330px;display:block;margin:0 auto;}
-#partijinfo_wrapper{height:auto;margin-bottom:10px;}
-#partijinfo, #hoofding{font-family:'Helvetica';font-size:13px;width:100%;max-height:100%;overflow:auto;font-weight:600;}
-#partijinfo:hover{cursor:default;}
-@media only screen and (min-width: 690px){
-#partijinfo{width:300px;}
-#partijinfo_wrapper,#board{float:left;}
-#partijinfo_wrapper{height:355px;}}
+.active:hover{background-color:rgba(115,158,193,0.5);cursor:pointer}
+#board{width:330px;display:block;margin:0 auto; margin-top:-15px;height:400px}
+#partijinfo_wrapper{position:relative;height:auto;margin-bottom:10px;margin-top:12px; padding:0 5px}
+#partijinfo, #hoofding{font-family:'Helvetica';font-size:14px;width:100%;max-height:100%;overflow:auto;font-weight:600;line-height:1.5em}
+#partijinfo:hover{cursor:default}
+
+table{border-spacing:0;empty-cells:show}
+td{font-size:75%}
+th{background-image:linear-gradient(to bottom,rgba(0,68,136,0.3),rgba(0,68,136,1));color:#fff;font-size:90%;font-weight:bold}
+.table th{padding-left:2px!important;padding-right:20px!important}
+.table th:nth-child(4), .table th:nth-child(5){min-width:120px!important}
+.disabled .page-link{cursor:default!important}
+.pagination{font-size:15px}
+#partijenTab_wrapper{width:100%!important}
+#partijenTab_wrapper .row:nth-child(2){overflow-x:auto}
+#partijenTab_wrapper .row:nth-child(2) .col-sm-12{padding-left:0;padding-right:0}
+#partijenTab_filter{float:right}
+.selected{background-color:rgba(115,158,193,0.3)}
+#spelers {position:absolute; top:-32px; left:-13px;font:12px 'Helvetica'; font-weight:bolder;line-height:1.1em;visibility:hidden;}
+#laatsteHalveZet {position:absolute;bottom:-40px;left:-8px;font:13px 'Helvetica';font-weight:bolder;line-height:18px;visibility:hidden;}
+
+#board {position: relative;padding-top:32px;}
+#canvasBorder {display:none;width:310px;height:310px;border: 1px solid black;position:absolute;top:34px;left:11px;border-radius:3px;box-shadow:0 0 5px inset;}
+
+#witOnder, #zwartOnder{display: none;font-weight:bolder;font-size:8px;}
+.nummers, .letters {position: absolute;}
+.nummers{width:10px;height:304px;top:2px;left:-9px;}
+.letters{width:304px;height:10px;left:3px;bottom:-12px;}
+.nummers span {display:block;line-height:38px;}          
+.letters span {display:block;width:38px;float:left;text-align:center;}
+
+#knoppen {width:244px;height:40px;position:absolute;bottom:-53px;left:70px;}
+#eerste, #vorige, #volgende, #laatste{float:left;padding:8px 8px}
+
+#draaibord{float:right;padding:8px 8px}
+
+@media only screen and (min-width:768px){
+  #partijinfo{width:300px;font-size:13px}
+  #partijinfo_wrapper,#board{float:left}
+  #partijinfo_wrapper{margin-top:-15px}
+  #partijinfo_wrapper{height:355px;margin-bottom:50px}#board{margin-left:10px}
+  #partijenTab_wrapper .row:nth-child(2) .col-sm-12{padding-left:15px;padding-right:15px}
+}
+

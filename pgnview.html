@@ -26,9 +26,43 @@
     </div>
 
     <div class="row">
-      <div  class="col-md-12">
+      <div  class="col-12">
         <div id="board">
-          <canvas id="schaken" width="330" height="400"></canvas>
+          <div id="canvasBorder">
+            <div id="witOnder">
+              <div class="nummers">
+                <span>8</span><span>7</span><span>6</span><span>5</span>
+                <span>4</span><span>3</span><span>2</span><span>1</span>
+              </div>
+              <div class="letters">
+                <span>A</span><span>B</span><span>C</span><span>D</span>
+                <span>E</span><span>F</span><span>G</span><span>H</span>
+              </div>
+            </div>
+            <div id="zwartOnder">
+              <div class="nummers">
+                <span>1</span><span>2</span><span>3</span><span>4</span>
+                <span>5</span><span>6</span><span>7</span><span>8</span>
+              </div>
+              <div class="letters">
+                <span>H</span><span>G</span><span>F</span><span>E</span>
+                <span>D</span><span>C</span><span>B</span><span>A</span>
+              </div>
+            </div>
+            <div id="spelers">
+              <span>&#9898; </span><span id="wit">n</span><br />
+              <span>&#9899; </span><span id="zwart">n</span>
+            </div>
+            <span id="laatsteHalveZet">n</span>
+            <div id="knoppen">
+              <div id="eerste"><img src="../common/images/go-first.png" /></div>
+              <div id="vorige"><img src="../common/images/go-previous.png" /></div>
+              <div id="volgende"><img src="../common/images/go-next.png" /></div>
+              <div id="laatste"><img src="../common/images/go-last.png" /></div>
+              <div id="draaibord"><img src="../common/images/view-refresh.png" /></div>
+            </div>
+          </div>
+          <canvas id="schaken" width="325" height="325"></canvas>
         </div>
         <div id="partijinfo_wrapper">
           <div id="hoofding"></div>
@@ -38,7 +72,7 @@
     </div>
 
     <div class="row">
-      <div  class="col-md-12">
+      <div  class="col-12">
         <table id="partijenTab" class="table table-condensed"></table>
       </div>
     </div>
