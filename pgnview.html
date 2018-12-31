@@ -12,7 +12,8 @@
   <meta name="viewport"               content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" media="all" href="../common/css/bootstrap.min.css" />
   <link rel="stylesheet" href="PGNViewer.css" />
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="../common/js/jquery.min.js"></script>
+  <script src="../common/js/popper.min.js"></script>
   <script src="../common/js/bootstrap.min.js"></script>
   <script src="../common/js/jquery.dataTables.min.js"></script>
   <script src="../common/js/dataTables.bootstrap.js"></script>
@@ -26,56 +27,97 @@
     </div>
 
     <div class="row">
-      <div  class="col-12">
-        <div id="board">
-          <div id="canvasBorder">
-            <div id="witOnder">
-              <div class="nummers">
-                <span>8</span><span>7</span><span>6</span><span>5</span>
-                <span>4</span><span>3</span><span>2</span><span>1</span>
-              </div>
-              <div class="letters">
-                <span>A</span><span>B</span><span>C</span><span>D</span>
-                <span>E</span><span>F</span><span>G</span><span>H</span>
-              </div>
-            </div>
-            <div id="zwartOnder">
-              <div class="nummers">
-                <span>1</span><span>2</span><span>3</span><span>4</span>
-                <span>5</span><span>6</span><span>7</span><span>8</span>
-              </div>
-              <div class="letters">
-                <span>H</span><span>G</span><span>F</span><span>E</span>
-                <span>D</span><span>C</span><span>B</span><span>A</span>
-              </div>
-            </div>
-            <div id="spelers">
-              <span>&#9898; </span><span id="wit">n</span><br />
-              <span>&#9899; </span><span id="zwart">n</span>
-            </div>
-            <span id="laatsteHalveZet">n</span>
-            <div id="knoppen">
-              <div id="eerste"><img src="../common/images/go-first.png" /></div>
-              <div id="vorige"><img src="../common/images/go-previous.png" /></div>
-              <div id="volgende"><img src="../common/images/go-next.png" /></div>
-              <div id="laatste"><img src="../common/images/go-last.png" /></div>
-              <div id="draaibord"><img src="../common/images/view-refresh.png" /></div>
-            </div>
-          </div>
-          <canvas id="schaken" width="325" height="325"></canvas>
-        </div>
-        <div id="partijinfo_wrapper">
-          <div id="hoofding"></div>
-          <div id="partijinfo"></div>
+      <div  class="col-md-12 col-lg-10 col-xl-9">
+	      <div id="viewer">
+	        <div id="board">
+	          <div id="buitenrand">
+	            <div id="witOnder">
+	              <div class="nummers">
+	                <span>8</span><span>7</span><span>6</span><span>5</span>
+	                <span>4</span><span>3</span><span>2</span><span>1</span>
+	              </div>
+	              <div class="letters">
+	                <span>A</span><span>B</span><span>C</span><span>D</span>
+	                <span>E</span><span>F</span><span>G</span><span>H</span>
+	              </div>
+	            </div>
+	            <div id="zwartOnder">
+	              <div class="nummers">
+	                <span>1</span><span>2</span><span>3</span><span>4</span>
+	                <span>5</span><span>6</span><span>7</span><span>8</span>
+	              </div>
+	              <div class="letters">
+	                <span>H</span><span>G</span><span>F</span><span>E</span>
+	                <span>D</span><span>C</span><span>B</span><span>A</span>
+	              </div>
+	            </div>
+	            <div id="spelers">
+	              <span>&#9898; </span><span id="wit">n</span><br />
+	              <span>&#9899; </span><span id="zwart">n</span>
+	            </div>
+	            <span id="laatsteHalveZet">n</span>
+	            <div id="knoppen">
+	              <div id="eerste"><img src="../common/images/go-first.png" /></div>
+	              <div id="vorige"><img src="../common/images/go-previous.png" /></div>
+	              <div id="volgende"><img src="../common/images/go-next.png" /></div>
+	              <div id="laatste"><img src="../common/images/go-last.png" /></div>
+	              <div id="draaibord"><img src="../common/images/view-refresh.png" /></div>
+	            </div>
+	            <div id="rooster">
+	              <div id="a8" class="wit"></div><div id="b8" class="zwart"></div><div id="c8" class="wit"></div><div id="d8" class="zwart"></div>
+	              <div id="e8" class="wit"></div><div id="f8" class="zwart"></div><div id="g8" class="wit"></div><div id="h8" class="zwart"></div>
+	
+	              <div id="a7" class="zwart"></div><div id="b7" class="wit"></div><div id="c7" class="zwart"></div><div id="d7" class="wit"></div>
+	              <div id="e7" class="zwart"></div><div id="f7" class="wit"></div><div id="g7" class="zwart"></div><div id="h7" class="wit"></div>
+	
+	              <div id="a6" class="wit"></div><div id="b6" class="zwart"></div><div id="c6" class="wit"></div><div id="d6" class="zwart"></div>
+	              <div id="e6" class="wit"></div><div id="f6" class="zwart"></div><div id="g6" class="wit"></div><div id="h6" class="zwart"></div>
+	
+	              <div id="a5" class="zwart"></div><div id="b5" class="wit"></div><div id="c5" class="zwart"></div><div id="d5" class="wit"></div>
+	              <div id="e5" class="zwart"></div><div id="f5" class="wit"></div><div id="g5" class="zwart"></div><div id="h5" class="wit"></div>
+	
+	              <div id="a4" class="wit"></div><div id="b4" class="zwart"></div><div id="c4" class="wit"></div><div id="d4" class="zwart"></div>
+	              <div id="e4" class="wit"></div><div id="f4" class="zwart"></div><div id="g4" class="wit"></div><div id="h4" class="zwart"></div>
+	
+	              <div id="a3" class="zwart"></div><div id="b3" class="wit"></div><div id="c3" class="zwart"></div><div id="d3" class="wit"></div>
+	              <div id="e3" class="zwart"></div><div id="f3" class="wit"></div><div id="g3" class="zwart"></div><div id="h3" class="wit"></div>
+	
+	              <div id="a2" class="wit"></div><div id="b2" class="zwart"></div><div id="c2" class="wit"></div><div id="d2" class="zwart"></div>
+	              <div id="e2" class="wit"></div><div id="f2" class="zwart"></div><div id="g2" class="wit"></div><div id="h2" class="zwart"></div>
+	
+	              <div id="a1" class="zwart"></div><div id="b1" class="wit"></div><div id="c1" class="zwart"></div><div id="d1" class="wit"></div>
+	              <div id="e1" class="zwart"></div><div id="f1" class="wit"></div><div id="g1" class="zwart"></div><div id="h1" class="wit"></div>
+	            </div>
+	            <div id="binnenrand"></div>
+	          </div>
+	        </div>
+	        <div id="partijinfo_wrapper">
+	          <div id="hoofding"></div>          
+	          <div id="partijinfo">
+	            <span class="kies">
+	            </span>
+	          </div>
+	        </div>  
+	      </div>              
+      </div>     
+      <div class="row justify-content-center">
+        <div class="col-md-12 col-lg-10 col-xl-9">
+          <table id="partijenTab" class="table table-sm"></table>
         </div>
       </div>
-    </div>
-
-    <div class="row">
-      <div  class="col-12">
-        <table id="partijenTab" class="table table-condensed"></table>
-      </div>
-    </div>
+	  </div>
   </div>
+  <script type="text/javascript">
+$(document).ready(function () {
+  window.onresize = function () {
+    setResizer();               
+  }
+});
+function setResizer() {
+  berekenCoordinaten();
+  tekenStelling();
+  vergelijkSchermgrootte();
+}
+  </script>
 </body>
 </html>

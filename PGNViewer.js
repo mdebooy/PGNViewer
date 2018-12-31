@@ -17,17 +17,23 @@
  * @author Marco de Booij
  * @author Nico Vanwonterghem
  * 
- * @version 2.0.0
+ * @version 2.1.0
  */
 
+//array van de velden
+var velden = [
+  'a8', 'b8', 'c8', 'd8', 'e8', 'f8', 'g8', 'h8',
+  'a7', 'b7', 'c7', 'd7', 'e7', 'f7', 'g7', 'h7',
+  'a6', 'b6', 'c6', 'd6', 'e6', 'f6', 'g6', 'h6',
+  'a5', 'b5', 'c5', 'd5', 'e5', 'f5', 'g5', 'h5',
+  'a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4', 'h4',
+  'a3', 'b3', 'c3', 'd3', 'e3', 'f3', 'g3', 'h3',
+  'a2', 'b2', 'c2', 'd2', 'e2', 'f2', 'g2', 'h2',
+  'a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'g1', 'h1'];
+
 // Vaste waardes.
-var FEN = 'rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR',
-    RAND_BOVEN = 5,
-    RAND_LINKS = 14,
-    STUKKEN = 'kqrbnp.PNBRQK',
-    VELD_GROOTTE = 38,
-    VELD_WIT = '#fff',
-    VELD_ZWART = '#739ec1';
+var FEN = 'rnbqkbnrpppppppp32PPPPPPPPRNBQKBNR',   
+    STUKKEN = 'kqrbnp.PNBRQK';
 
 // Partij variabelen.
 var fen = '',
@@ -39,24 +45,21 @@ var fen = '',
     zetten = '',
     zwartspeler = '',
     uitslag = '',
-    speeldatum = '',
+    datum = '',
     eco = '',
     veldVan = -1,
     veldNaar = -1;
 
 // Script variabelen.
-var canvas = null,
-    ctx = null,
-    document = null,
-    knophoogte = 48,
-    teksthoogte = 20,
-    stukken = null;
+var document = null,
+    coordinatenFontsize = 8;
 
-// Bord variabelen.
-var bordbreedte = 8 * VELD_GROOTTE;
-
-var plyTab,
+var plies,
     json;
+
+//breekpunten, twee extra breekpunten meegeven als grootste en kleinste
+var breekpunten = [1000, 768, 600, 400, 0],
+    vorigeGrootte = 0;
 
 /**
  * Verander de positie op het bord naar de aangeklikte zet
@@ -65,14 +68,21 @@ function bepaalPly() {
   var partijZetten = document.getElementsByClassName("sleeping");
   for (var i = 0; i < partijZetten.length; i++) {
     partijZetten[i].onclick = function () {
-      for (var j = 0; j < zetten.length; j++) {
-        kleurZet(j, false);
+      for (var i = 0; i < zetten.length; i++) {
+        kleurZet(i, false);
       }
       halvezet = this.id;
       kleurZet(halvezet, true);
       naarHalvezet(halvezet);
     }
   }
+}
+
+/*Bereken de positie van de coordinaten, naargelang de grootte van het bord*/
+function berekenCoordinaten () {
+  var breedte = $('#rooster').innerHeight();   
+  $('.nummers span').css("line-height", breedte / (coordinatenFontsize * 8));
+  $('.letters span').css("width", breedte / 8);
 }
 
 /* bepaalt welke cursor er getoond wordt,
@@ -94,7 +104,7 @@ function doeZet(zet) {
       veld1 = -1,
       veld2 = -1;
 
-  for (var i = 0; i < zet.length; i++) {
+  for (var i = 0; i < zet.length; i++) {           
     if (STUKKEN.indexOf(zet.substring(i, i + 1)) >= 0) {
       stelling[veld] = STUKKEN.indexOf(zet.substring(i, i + 1)) - 6;
       if (veld1 == -1) {
@@ -109,7 +119,7 @@ function doeZet(zet) {
         i++;
       }
       veld += leeg;
-    }
+    }      
   }
 
   // e.p. aanpassing van veld.
@@ -119,27 +129,27 @@ function doeZet(zet) {
   if (zet.indexOf("..6p") > 0) {
     veld1++;
   }
-  // Korte zwarte rochade
+  // Korte zwarte rochade.
   if (zet.indexOf("rk.") > 0) {
     veld1 = 4;
     veld2 = 6;
   }
-  // Lange zwarte rochade
+  // Lange zwarte rochade.
   if (zet.indexOf("kr.") > 0) {
     veld1 = 4;
     veld2 = 2;
   }
-  // Korte witte rochade
+  // Korte witte rochade.
   if (zet.indexOf("RK.") > 0) {
     veld1 = 60;
     veld2 = 62;
   }
-  // Lange witte rochade
+  // Lange witte rochade.
   if (zet.indexOf("KR.") > 0) {
     veld1 = 60;
     veld2 = 58;
   }
-
+     
   return "" + veld1 + "," + veld2;
 }
 
@@ -149,41 +159,28 @@ function doeZet(zet) {
 function draaiBord() {
   witonder *= -1;
   reverseCoordinaten();
+  velden.reverse();
   tekenStelling();
-  signaalVeld(veldVan);
-  signaalVeld(veldNaar);
-}
-
-/**
- * Bepaal de kleur van het veld.
- */
-function getVeldKleur(iRij, iLijn) {
-  var cVeldKleur;
-
-  if (iRij % 2) {
-    cVeldKleur = (iLijn % 2 ? VELD_WIT : VELD_ZWART);
-  } else {
-    cVeldKleur = (iLijn % 2 ? VELD_ZWART : VELD_WIT);
-  }
-
-  return cVeldKleur;
+  signaalVeld();
 }
 
 /**
  * Kleur de zet.
  */
 function kleurZet(zet, aktief) {
-  var elem = document.getElementById(zet);
-  if (aktief) {
-    elem.className = elem.className.replace("sleeping", "active");
-  } else {
-    elem.className = elem.className.replace("active", "sleeping");
+  if (zet > -1) {
+    var elem = document.getElementById(zet);
+    if (aktief) {
+      elem.className = elem.className.replace("sleeping", "active");
+    } else {
+      elem.className = elem.className.replace("active", "sleeping");
+    }
   }
 }
 
-/* controleert of een button aanklikbaar is,
- * naargelang de positie op het bord
-*/
+/**
+ * controleert of een button aanklikbaar is naargelang de positie op het bord.
+ */
 function klikbaar(id) {
   var klikbaar = false;
   switch (id) {
@@ -201,15 +198,9 @@ function klikbaar(id) {
       if (halvezet < (zetten.length - 1)) {
         klikbaar = true;
       }
+      break;     
   }
   return klikbaar;
-}
-
-/**
- * Teken een leeg veld.
- */
-function leegVeld(veld) {
-  tekenVeld(veld % 8, (veld - veld % 8) / 8);
 }
 
 /**
@@ -247,17 +238,40 @@ function muisWiel(ev) {
   }
 }
 
+/* 
+ * Ga naar de beginstelling.
+ */
+function naarBeginstelling() {
+  for (var i = 0; i < velden.length; i++) {
+    document.getElementById(velden[i]).classList.remove("actiefVeld");
+  }
+  laatsteHalveZet.style.visibility = "hidden";
+  veldVan = -1;
+  veldNaar = -1;
+  halvezet = -1;
+  zetInZicht(halvezet);
+}
+
+/* 
+ * Ga naar de eindstelling.
+ */
+function naarEindstelling() {
+  halvezet = zetten.length - 1;
+  naarHalvezet(halvezet);  
+}
+
 /**
  * Geef de stelling na de gevraagde halve zet.
  */
 function naarHalvezet(ply) {
-  var i;
   startPositie();
-  if (ply == -1) {
+  if (ply <= -1) {
+    laatsteHalveZet.style.visibility = "hidden";
     veldVan = -1;
     veldNaar = -1;
+    halvezet = -1;
   } else {
-    for (i = 0; i < ply; i++) {
+    for (var i = 0; i < ply; i++) {
       doeZet(zetten[i]);
     }
 
@@ -265,69 +279,57 @@ function naarHalvezet(ply) {
     veldVan = resultaat[0];
     veldNaar = resultaat[1];
   }
-
+  zetInZicht(ply);
   tekenStelling();
-  signaalVeld(veldVan);
-  signaalVeld(veldNaar);
-  laatsteHalveZet.style.visibility = "hidden";
+  signaalVeld();
   if (ply >= 0) {
     var laatsteZet = "";
     if (i % 2 == 1) {
       laatsteZet += Math.round(i / 2) + "...";
     }
-    laatsteZet += plyTab[i].ply;     
+    laatsteZet += plies[i].ply;
     laatsteHalveZet.style.visibility = "visible";
     laatsteHalveZet.removeChild(laatsteHalveZet.firstChild);
     laatsteHalveZet.appendChild(document.createTextNode(laatsteZet));
-    
+
     kleurZet(halvezet, true);
   }
-  zetInZicht(halvezet);
 }
 
 /**
  * 'Wandel' door de partij.
  */
 function navigeer(aktie) {
-  var accept = false;
   switch (aktie) {
     case 36:
       kleurZet(halvezet, false);
       halvezet = -1;
       naarHalvezet(halvezet);
-      accept = true;
       break;
     case 37:
-      kleurZet(halvezet, false);
-      halvezet--;
-      naarHalvezet(halvezet);
-      accept = true;
+      if (halvezet >= -1) {
+        kleurZet(halvezet, false);
+        halvezet--;
+        naarHalvezet(halvezet);
+      }
       break;
     case 39:
       if (halvezet < (zetten.length - 1)) {
-        if (halvezet >= 0) {
-          kleurZet(halvezet, false);
-        }
+        kleurZet(halvezet, false);
         halvezet++;
         naarHalvezet(halvezet);
-        accept = true;
       }
       break;
     case 35:
-      if (halvezet >= 0) {
-        kleurZet(halvezet, false);
-      }
+      kleurZet(halvezet, false);
       halvezet = zetten.length - 1;
       naarHalvezet(halvezet);
-      accept = true;
       break;
   }
-
-  return accept;
 }
 
 /**
- * Activeer partij
+ * Activeer partij.
  */
 function partij(gamekey) {
   // Alle vorige informatie verwijderen.
@@ -340,16 +342,18 @@ function partij(gamekey) {
       pgn = json[i]['_moves'].replace(/B/g, '♗').replace(/K/g, '♔').replace(/N/g, '♘').replace(/Q/g, '♕').replace(/R/g, '♖');
       zetten = json[i]['_pgnviewer'].split(' ');
       uitslag = json[i]['Result'].replace(/1\/2/g, "½");
-      speeldatum = json[i]['Date'];
+      datum = json[i]['Date'];
       eco = json[i]['ECO'];
     }
   }
   if (!start) {     
-    tekenStelling();
+    naarBeginstelling();
+
     schrijfPartijInfo();
-  }
-  
-  halvezet = -1;
+    witonder === -1 ? draaiBord() : tekenStelling();
+      
+    document.getElementById("board").addEventListener('wheel', muisWiel, false);
+  }   
 }
 
 /**
@@ -357,37 +361,25 @@ function partij(gamekey) {
  */
 var start = true;
 function pgnviewer() {
-  canvas = document.getElementById('schaken');
-  // Wordt canvas ondersteund?
-  if (canvas.getContext) {
-    ctx = canvas.getContext('2d');
-    ctx.font = "12px 'Helvetica'";
-    ctx.clearRect(0, 0, canvas.width, canvas.height - RAND_BOVEN - knophoogte);
-    laatsteHalveZet.style.visibility = "hidden";
-
-    $.getJSON('partijen.json', function (data) {
-      json = data;
-    })
-    startPositie();     
-    if (start) {
-      stukken = new Image();
-      stukken.src = '../common/images/stukken.png';
-      stukken.onload = function () {               
-        tekenStelling();
-        $('#canvasBorder').toggle();
-        $('#witOnder').toggle();
-      }
-      start = false;
-      $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('mouseover', function () {
-        buttons(this.id);
-      });
-      $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('click', function () {
-        muisklik(this.id);
-      });                   
-    }
-     
-  } else {
-    alert("Canvas wordt niet ondersteund!");
+  $.getJSON('partijen.json', function (data) {
+    json = data;
+  })
+  startPositie();     
+  if (start) {                        
+    $('#buitenrand').toggle();
+    $('#witOnder').toggle();
+    tekenStelling();
+    start = false;
+    $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('mouseover', function () {
+      buttons(this.id);
+    });
+    $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('mouseleave', function () {
+      knoppen.style.cursor = "default";
+    });
+    $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('click', function () {
+      muisklik(this.id);
+    });
+    berekenCoordinaten();
   }
 }
 
@@ -397,67 +389,150 @@ function pgnviewer() {
 function plaatsStukken() {
   for (var i = 0; i < 64; i++) {
     if (stelling[i] != 0) {
-      tekenStuk(stelling[i], ((witonder == 1) ? i : 63 - i));
+      tekenStuk(stelling[i], i);      
     }
   }
 }
 
 /**
- * Draait de volgorde van de coordinaten om
+ * Draait de volgorde van de coordinaten om.
  */
 function reverseCoordinaten() {
   $('#witOnder').toggle();
-  $('#zwartOnder').toggle();
+  $('#zwartOnder').toggle();  
 }
 
 /**
- * Schrijf de speler informatie en de PGN op het scherm.
- * 'spelers', 'wit' en 'zwart' zijn de id's van elementen in de html pagina
+ * Schrijft de hoofding van de partijinfo.
  */
-function schrijfPartijInfo() { 
-  spelers.style.visibility = "visible";
+function schrijfHoofding() {
+  var hoofding = document.getElementById("hoofding");
+  while (hoofding.firstChild) {
+    hoofding.removeChild(hoofding.firstChild);
+  }
+  var resultaat = document.createElement("span");
+  resultaat.id = "uitslag";
+  resultaat.appendChild(document.createTextNode(uitslag));
+  var date = document.createElement("span");
+  date.id = "datum";
+  date.appendChild(document.createTextNode(datum));
+  var ecoCode = document.createElement("span");
+  ecoCode.id = "eco";
+  ecoCode.appendChild(document.createTextNode(eco));
+  hoofding.appendChild(resultaat);
+  hoofding.appendChild(date);
+  hoofding.appendChild(ecoCode);
+}
+
+/**
+ * Maak de partijinfo leeg.
+ */
+function schrijfLeegPartijinfo() {
+  var div = document.getElementById("partijinfo");
+  while (div.firstChild) {
+    div.removeChild(div.firstChild);
+  }
+  return div;
+}
+
+/**
+ * Schrijf de speler informatie en de PGN op het scherm. De 'spelers', 'wit' en
+ * 'zwart' zijn de id's van elementen in de html pagina.
+ */
+function schrijfPartijInfo() {
+  if (witspeler !== '') {
+    spelers.style.visibility = "visible";
+  }  
   wit.removeChild(wit.firstChild);
   wit.appendChild(document.createTextNode(witspeler));
   zwart.removeChild(zwart.firstChild);
   zwart.appendChild(document.createTextNode(zwartspeler));
-  wrapTekst(pgn);
+
+  schrijfPgnNaarPartijinfo(pgn);
 }
 
 /**
- * Teken een vierkant om het 'van' veld aan te duiden.
+ * Splits de tekst in stukken en maakt kolommen voor het nummer, de zwarte zet,
+ * en de witte zet.
  */
-function signaalVeld(veld) {
-  if (veld == -1) {
-    return;
+function schrijfPgnNaarPartijinfo(pgn) {
+  var zetNummers = new Array(),
+      witteZetten = new Array(),
+      zwarteZetten = new Array();
+
+  plies = pgn.trim().split(" ");
+  schrijfHoofding();
+  var div = schrijfLeegPartijinfo();
+
+  var margin = document.createElement('div');
+  margin.id = "partijinfo_top";
+  div.appendChild(margin);
+
+  var alleZetten = document.createElement('div');
+  div.appendChild(alleZetten);
+
+  for (var i = 0; i < plies.length; i++) {
+    if (i % 2 == 1 || i == 1) {
+      zwarteZetten.push(  plies[i])
+    } else {
+      zetNummers.push(plies[i].substr(0, plies[i].indexOf(".") + 1));
+      witteZetten.push(plies[i].substr(plies[i].indexOf(".") + 1));
+    }
   }
 
-  var kleur = ctx.strokeStyle;
-  var x = veld % 8;
-  var y = (veld - x) / 8;
-  if (witonder == -1) {
-    x = 7 - x;
-    y = 7 - y;
+  for (i = 0, var j = 0; i < zetNummers.length; i++, j += 2) {
+    var span1 = document.createElement("span");
+    span1.className = "zetNummers";
+    span1.appendChild(document.createTextNode(zetNummers[i]));
+    alleZetten.appendChild(span1);
+    var span2 = document.createElement("span");
+    span2.id = j;
+    span2.className = "sleeping moves";
+    span2.appendChild(document.createTextNode(witteZetten[i]));
+    alleZetten.appendChild(span2);
+    if (zwarteZetten[i]) {
+      var span3 = document.createElement("span");
+      span3.id = j + 1;
+      span3.className = "sleeping moves";
+      span3.appendChild(document.createTextNode(zwarteZetten[i]));
+      alleZetten.appendChild(span3);
+    }
   }
-  ctx.strokeStyle = "red";
-  ctx.strokeRect(RAND_LINKS + x * VELD_GROOTTE + 1,
-           RAND_BOVEN + y * VELD_GROOTTE + 1,
-           VELD_GROOTTE - 2, VELD_GROOTTE - 2);
-  ctx.strokeStyle = kleur;
+  alleZetten.appendChild(document.createElement("br"));
+  var res = document.createElement("span");
+  res.id = "resultaat";
+  res.appendChild(document.createTextNode(uitslag));
+  alleZetten.appendChild(res);
+
+  div.appendChild(alleZetten);
+
+  bepaalPly();
+}
+
+/**
+ * Teken een vierkant om het 'van' veld en het 'naar' veld aan te duiden.
+ */
+function signaalVeld() {
+  for (var i = 0; i < velden.length; i++) {    
+    document.getElementById(velden[i]).classList.remove("actiefVeld");
+  }
+  document.getElementById(velden[veldVan]).classList.add("actiefVeld");
+  document.getElementById(velden[veldNaar]).classList.add("actiefVeld");
 }
 
 /**
  * Maak de startopstelling.
  */
 function startPositie() {
-  fen = FEN;
+  var fen = FEN;
   for (var i = 0; i < 64; i++) {
     stelling[i] = 0;
   }
 
   var veld = 0;
   for (i = 0; i < fen.length; i++) {
-    var teken = fen.substring(i, i + 1);
-    var stuk = STUKKEN.indexOf(teken);
+    var teken = fen.substring(i, i + 1),
+        stuk = STUKKEN.indexOf(teken);
     if (stuk < 0) {
       if (teken != '/') {
         var legevelden = parseInt(fen.substring(i));
@@ -474,32 +549,13 @@ function startPositie() {
 }
 
 /**
- * Teken het bord in het canvas.
- */
-function tekenBord(value) {
-  for (var i = 0; i < 8; i++) {
-    for (var j = 0; j < 8; j++) {
-      tekenVeld(i, j);
-    }
-  }   
-}
-
-/**
- * Teken het kader rond het bord
- */
-function tekenKader() {
-  ctx.lineWidth = 2;
-  ctx.strokeRect(RAND_LINKS, RAND_BOVEN,
-       8 * VELD_GROOTTE,
-       8 * VELD_GROOTTE);  
-  ctx.lineWidth = 1;
-}
-
-/**
  * Teken de stelling.
  */
 function tekenStelling() {
-  tekenBord();
+  for (var i = 0; i < velden.length; i++) {
+    document.getElementById(velden[i]).style.backgroundImage = "none";     
+  }
+    
   plaatsStukken();
 }
 
@@ -507,83 +563,54 @@ function tekenStelling() {
  * Teken het stuk op het juiste veld.
  */
 function tekenStuk(stuk, veld) {
-  var x = (Math.abs(stuk) - 1) * VELD_GROOTTE,
-      y = ((stuk < 0) ? 0 : VELD_GROOTTE);
-  var lijn = veld % 8,
-      rij = (veld - lijn) / 8;
+  var x = $('#rooster').innerHeight() / 8,
+      y = ((stuk > 0) ? 0 : $('#rooster').innerHeight() / 8);
 
-  ctx.drawImage(stukken, x, y,
-      VELD_GROOTTE, VELD_GROOTTE,
-      RAND_LINKS + lijn * VELD_GROOTTE,
-      RAND_BOVEN + rij * VELD_GROOTTE,
-      VELD_GROOTTE, VELD_GROOTTE);
+  switch (stuk) {
+    case 4: case -4:
+      x *= 2;
+      break;
+    case 2: case -2:
+      x *= 3;
+      break;
+    case 3: case -3:
+      x *= 4;
+      break;
+    case 5: case -5:
+      x *= 5;
+      break;
+    case 6: case -6:
+      x *= 6;
+      break;
+    default: x *= 1;
+  }
+  document.getElementById(velden[veld]).style.background = "url('../common/images/stukken.png')" + x + "px " + y + "px";
+  document.getElementById(velden[veld]).style.backgroundSize = "600% 200%";
 }
 
-/**
- * Teken een veld.
+/** 
+ * Vergelijk huidige venstergrootte met de vorige venstergrootte, zodat bij een
+ * window resize de 'zet in zicht' kan gehouden worden. Gebruikt een array van
+ * breekpunten, van groot naar klein. Twee 'extra' breekpunten als grootste en
+ * kleinste, anders werkt het in bepaalde gevallen niet bij de 'echte' grootste
+ * en kleinste punten.
  */
-function tekenVeld(iRij, iLijn) {
-  ctx.fillStyle = getVeldKleur(iRij, iLijn);
-  ctx.fillRect(RAND_LINKS + iRij * VELD_GROOTTE,
-       RAND_BOVEN + iLijn * VELD_GROOTTE,
-       VELD_GROOTTE, VELD_GROOTTE);
-  ctx.stroke();
-}
-
-/**
- * Splits de tekst in stukken die binnen de breedte van de tekstruimte vallen.
- */
-function wrapTekst(tekst) {
-  var ply = tekst.trim().split(" ");
-  plyTab = new Array(ply.length);
-
-  var hoofding = document.getElementById("hoofding");
-  while (hoofding.firstChild) {
-    hoofding.removeChild(hoofding.firstChild);
-  }
-  var resultaat = document.createElement("span");
-  resultaat.id = "uitslag";
-  resultaat.appendChild(document.createTextNode(uitslag));
-  var date = document.createElement("span");
-  date.id = "datum";
-  date.appendChild(document.createTextNode(speeldatum));
-  var ecoCode = document.createElement("span");
-  ecoCode.id = "eco";
-  ecoCode.appendChild(document.createTextNode(eco));
-  hoofding.appendChild(resultaat);
-  hoofding.appendChild(date);
-  hoofding.appendChild(ecoCode);
-
-  var div = document.getElementById("partijinfo");
-  div.addEventListener('wheel', muisWiel, false);
-  while (div.firstChild) {
-    div.removeChild(div.firstChild);
-  }
-  for (var i = 0; i < ply.length; i++) {
-    var span = document.createElement("span");
-    span.id = i;
-    span.className = "sleeping moves";
-    span.appendChild(document.createTextNode(ply[i]));
-    div.appendChild(span);
-    div.appendChild(document.createTextNode(" "));
-
-    //dit is voor het schrijven van de zet onderaan links van het bord
-    //wordt dan gedaan in naarhalveZet() functie
-    plyTab[i] = {
-      ply: ply[i]
+function vergelijkSchermgrootte() {
+  var grootte = window.innerWidth;
+  for (var i = 0; i < breekpunten.length; i++) {
+    if (grootte < breekpunten[i] && grootte >= breekpunten[i+1]) {
+      if (vorigeGrootte >= breekpunten[i] || vorigeGrootte < breekpunten[i+1]) {
+        zetInZicht(halvezet);
+        break;
+      }
     }
   }
-  div.appendChild(document.createElement("br"));
-  var res = document.createElement("span");
-  res.appendChild(document.createTextNode(uitslag));
-  div.appendChild(res);
-
-  bepaalPly();
+  
+  vorigeGrootte = grootte;
 }
 
 /**
  * Controleer of de zet nog 'in' de viewport valt, en indien niet, pas dit aan.
- *
  */
 function zetInZicht(zet) {
   var container = document.getElementById("partijinfo");
@@ -591,24 +618,21 @@ function zetInZicht(zet) {
     container.scrollTop = 0;
     return;
   }
-  if (container.clientHeight < 355) {
-    return;
-  }
+
   var element = document.getElementById(zet);
 
-  //container top, bottom
-  var cTop = container.scrollTop;
-  var cBottom = cTop + container.clientHeight;
+  // Container top, bottom
+  var cTop = container.scrollTop,
+      cBottom = cTop + container.clientHeight;
   
-  //element top, bottom
-  var eTop = element.offsetTop - 46;
-  var eBottom = eTop + element.clientHeight + 46;
+  // Element top, bottom
+  var eTop = element.offsetTop - 46,
+      eBottom = eTop + element.clientHeight + 69;
   
-  //controle of in zicht
+  // Controle of in zicht
   if (eTop < cTop) {
     container.scrollTop -= (cTop - eTop + element.clientHeight);
-  }
-  else if (eBottom > cBottom) {
+  } else if (eBottom > cBottom) {
     container.scrollTop += (eBottom - cBottom + element.clientHeight);
   }
 }

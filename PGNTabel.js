@@ -17,7 +17,7 @@
  * @author Marco de Booij
  * @author Nico Vanwonterghem
  * 
- * @version 1.0.2
+ * @version 2.1.0
  */
 
 $(document).ready(function () {
@@ -80,13 +80,13 @@ $(window).keydown(function(e) {
   navigeer(e.keyCode);
 });
 
-/*variable s keeps track of last selected row*/
+// Variable s keeps track of last selected row.
 var s = 0;
 
-/*ads event when a row is clicked
-  event: add 'selected' class to clicked row, and remove 
-  'selected' class from previously selected row, if any
-*/
+/**
+ * Ads event when a row is clicked event: add 'selected' class to clicked row,
+ * and remove  'selected' class from previously selected row, if any.
+ */
 function addEvent() {
   $('#partijenTab tbody tr').on('click', function () {
     $('.selected').removeClass('selected');
@@ -95,10 +95,11 @@ function addEvent() {
   });
 }
 
-/*makes sure event 'addEvent' is added to new rows, e.g. after clicking a 
-  pagination number or when changing the order of the table rows.
-  also removes class 'selected', except from the last selected row (s)
-*/
+/**
+ * Makes sure event 'addEvent' is added to new rows, e.g. after clicking a 
+ * pagination number or when changing the order of the table rows. Also removes
+ * class 'selected', except from the last selected row (s).
+ */
 function resetAll() {
   $('#partijenTab tbody tr.selected').each(function () {
     if (this != s) {

@@ -17,60 +17,117 @@
  * @author Marco de Booij
  * @author Nico Vanwonterghem
  * 
- * @version 2.0.0
+ * @version 2.1.0
  */
-#partijenTab tr:hover{cursor:pointer;background-color:rgba(115,158,193,0.2)}
-#partijenTab tr:checked{background-color:rgba(115,158,193,0.3)}
-#hoofding{padding-bottom:7px}
-#uitslag,#eco,#datum{display:inline-block;font-weight:700}
-#uitslag{float:left}
-#eco{float:right}
-#datum{position:relative;left:32%}
-.moves{display:inline-block;border-radius:3px;padding:0 1px 0 1px}
-.sleeping{background-color:white}
-.sleeping:hover{background-color:#F5EEC2;cursor:pointer}
-.active{background-color:rgba(115,158,193,0.5)}
-.active:hover{background-color:rgba(115,158,193,0.5);cursor:pointer}
-#board{width:330px;display:block;margin:0 auto; margin-top:-15px;height:400px}
-#partijinfo_wrapper{position:relative;height:auto;margin-bottom:10px;margin-top:12px; padding:0 5px}
-#partijinfo, #hoofding{font-family:'Helvetica';font-size:14px;width:100%;max-height:100%;overflow:auto;font-weight:600;line-height:1.5em}
-#partijinfo:hover{cursor:default}
 
+/* Font */
+#spelers, #laatsteHalveZet, #partijinfo, #hoofding{font-family:"Helvetica"}
+th, #witOnder, #zwartOnder, #partijinfo, #hoofding, #spelers, #laatsteHalveZet{font-weight:600}
+th{font-size:90%}
+#witOnder, #zwartOnder{font-size:8px}
+#spelers{font-size:12px}
+#laatsteHalveZet{font-size:13px}
+#partijinfo, #hoofding{font-size:14px} 
+.moves{font-size:13px;font-weight:500}
+
+/* De tabel met partijen */
 table{border-spacing:0;empty-cells:show}
 td{font-size:75%}
-th{background-image:linear-gradient(to bottom,rgba(0,68,136,0.3),rgba(0,68,136,1));color:#fff;font-size:90%;font-weight:bold}
+th{background-image:linear-gradient(to bottom,rgba(0,68,136,0.3),rgba(0,68,136,1));color:#fff}
 .table th{padding-left:2px!important;padding-right:20px!important}
 .table th:nth-child(4), .table th:nth-child(5){min-width:120px!important}
 .disabled .page-link{cursor:default!important}
 .pagination{font-size:15px}
-#partijenTab_wrapper{width:100%!important}
+#partijenTab tr:hover{cursor:pointer;background-color:rgba(0,68,136,0.2)}
+.selected{background-color:rgba(0,68,136,0.3)}
+#partijenTab tr:checked{background-color:rgba(0,68,136,0.3)}
 #partijenTab_wrapper .row:nth-child(2){overflow-x:auto}
 #partijenTab_wrapper .row:nth-child(2) .col-sm-12{padding-left:0;padding-right:0}
 #partijenTab_filter{float:right}
-.selected{background-color:rgba(115,158,193,0.3)}
-#spelers {position:absolute; top:-32px; left:-13px;font:12px 'Helvetica'; font-weight:bolder;line-height:1.1em;visibility:hidden;}
-#laatsteHalveZet {position:absolute;bottom:-40px;left:-8px;font:13px 'Helvetica';font-weight:bolder;line-height:18px;visibility:hidden;}
 
-#board {position: relative;padding-top:32px;}
-#canvasBorder {display:none;width:310px;height:310px;border: 1px solid black;position:absolute;top:34px;left:11px;border-radius:3px;box-shadow:0 0 5px inset;}
+/* Het bord en zijn wrapper */
+#board{display:block;position:relative;width:330px;height:400px;min-height:400px;margin:0 auto;margin-top:-15px;padding-top:30px}
+#buitenrand{display:none;width:312px;height:312px;border:1px solid #4d4d4d;position:absolute;top:33px;left:11px;border-radius:3px;box-shadow:0 0 10px inset}
+#binnenrand{display:none}
 
-#witOnder, #zwartOnder{display: none;font-weight:bolder;font-size:8px;}
-.nummers, .letters {position: absolute;}
-.nummers{width:10px;height:304px;top:2px;left:-9px;}
-.letters{width:304px;height:10px;left:3px;bottom:-12px;}
-.nummers span {display:block;line-height:38px;}          
-.letters span {display:block;width:38px;float:left;text-align:center;}
+/* Het 'rooster':alle velden van het bord */
+#rooster{width:98%;height:98%;position:absolute;top:1%;left:1%}
+#rooster > div{float:left;width:calc(100% / 8);height:calc(100% / 8)}
+.zwart{background-color:#739ec1!important}
+.wit{background-color:rgba(0, 100, 0, 0.04)!important}
+.actiefVeld{box-shadow:0 0 2px 2px inset #f54021}
 
-#knoppen {width:244px;height:40px;position:absolute;bottom:-53px;left:70px;}
+/* De coordinaten */
+#witOnder, #zwartOnder{display:none}
+.nummers, .letters{position:absolute}
+.nummers{width:10px;top:1%;left:-9px}
+.letters{height:10px;left:1%;bottom:-12px}
+.nummers span{display:block}      
+.letters span{display:block;height:10px;float:left;text-align:center}
+
+/* Spelers en laatste halve zet */
+#spelers{visibility:hidden;position:absolute;top:-32px;left:-13px;line-height:1.1em;visibility:hidden}
+#laatsteHalveZet{position:absolute;bottom:-40px;left:-7px;line-height:18px;visibility:hidden}
+
+/* De knoppen */
+#knoppen{width:244px;height:40px;position:absolute;bottom:-53px;right:0}
 #eerste, #vorige, #volgende, #laatste{float:left;padding:8px 8px}
-
 #draaibord{float:right;padding:8px 8px}
 
-@media only screen and (min-width:768px){
-  #partijinfo{width:300px;font-size:13px}
-  #partijinfo_wrapper,#board{float:left}
-  #partijinfo_wrapper{margin-top:-15px}
-  #partijinfo_wrapper{height:355px;margin-bottom:50px}#board{margin-left:10px}
-  #partijenTab_wrapper .row:nth-child(2) .col-sm-12{padding-left:15px;padding-right:15px}
+/* De hoofding voor de pgn zetten van de partij */
+#uitslag,#eco,#datum{display:inline-block}
+#uitslag{float:left}
+#eco{float:right}
+#datum{position:relative;left:34%}
+#hoofding{width:100%;padding-bottom:7px}
+
+/* De pgn zetten van de partij */
+/* Wrapper */
+#partijinfo_wrapper{position:relative;max-width:358px;height:auto;margin:10px auto;margin-bottom:15px;padding:0 10px}
+#partijinfo{width:100%;min-width:338px;max-height:192px;overflow:auto}
+#partijinfo{border:double grey;border-radius:3px;background-color:rgba(0,68,136,0.1);box-shadow:0 0 2px inset}  
+#partijinfo:hover{cursor:default}
+.kies{display:none;width:100%;text-align:center}
+/* De zetten */
+#partijinfo_top{width:100%;height:2px;background-color:#556B2F}
+.moves, .zetNummers{display:inline-block;height:23px;line-height:23px;border-bottom:1px dotted grey;border-radius:3px}
+.sleeping:hover{background-color:rgba(0,68,136,0.2);cursor:pointer}
+.active{background-color:rgba(0,68,136,0.5)}
+.active:hover{background-color:rgba(0,68,136,0.5);cursor:pointer}
+.moves{text-align:center;width: 61px}
+.zetNummers{width:31px;margin-left:5px}
+#resultaat{display:inline-block;width:92px;text-align:center;background-color:rgba(0,68,136,0.7);color:#fff;margin-left:5px;margin:3px 0 3px 5px;border-radius:3px}
+
+/* Voor op een smartphone geeft bootstrap toch wat veel padding */ 
+.container{padding-left:3px!important;padding-right:3px!important}
+
+@media only screen and (min-width:400px){
+  #board{width:370px;height:440px}
+  #buitenrand{width:352px;height:352px}  
 }
 
+@media only screen and (min-width:600px){
+  #board{height:460px;margin-left:10px}
+  #partijinfo_wrapper{width:182px;height:352px;margin:-11px 15px 115px 0}
+  #partijinfo_wrapper,#board{float:left}
+  #partijinfo{width:100%;min-width:182px;height:100%;max-height:100%;border:double grey;border-radius:3px;position:absolute;top:28.5px;background-color:rgba(0,68,136, 0.1);box-shadow:0 0 2px inset}  
+  .kies{display:block;position:absolute;width:174px;top:135px;left:1px}
+  .moves{text-align:center}
+  #hoofding{width:180px}
+  #datum{position:absolute;left:63px}
+}
+
+@media only screen and (min-width:768px){
+  #board{width:510px;height:580px}  
+  #partijinfo_wrapper{height:490px;margin-bottom:10px}
+  .kies{top:235px}
+  #buitenrand{width:490px;height:490px}
+  #binnenrand{display:block;width:98%;height:98%;border:1px solid grey;position:absolute;top:1%;left:1%;box-shadow:0 0 2px inset}
+  #partijenTab_wrapper .row:nth-child(2) .col-sm-12{padding-left:12px;padding-right:12px}
+}
+
+/* Custom scrollbar in partijinfo */
+#partijinfo::-webkit-scrollbar{width:8px}
+#partijinfo::-webkit-scrollbar-track{background:#f1f1f1;border-radius:4px}
+#partijinfo::-webkit-scrollbar-thumb{background:#888;border-radius:4px}
+#partijinfo::-webkit-scrollbar-thumb:hover{background:#555}
