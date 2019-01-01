@@ -61,24 +61,7 @@ var plies,
 var breekpunten = [1000, 768, 600, 400, 0],
     vorigeGrootte = 0;
 
-/**
- * Verander de positie op het bord naar de aangeklikte zet
- */
-function bepaalPly() {
-  var partijZetten = document.getElementsByClassName("sleeping");
-  for (var i = 0; i < partijZetten.length; i++) {
-    partijZetten[i].onclick = function () {
-      for (var i = 0; i < zetten.length; i++) {
-        kleurZet(i, false);
-      }
-      halvezet = this.id;
-      kleurZet(halvezet, true);
-      naarHalvezet(halvezet);
-    }
-  }
-}
-
-/*Bereken de positie van de coordinaten, naargelang de grootte van het bord*/
+/* Bereken de positie van de coordinaten, naargelang de grootte van het bord */
 function berekenCoordinaten () {
   var breedte = $('#rooster').innerHeight();   
   $('.nummers span').css("line-height", breedte / (coordinatenFontsize * 8));
@@ -206,7 +189,7 @@ function klikbaar(id) {
 /**
  * Vang de muis klikken.
  */
-function muisklik(id) {  
+function muisKlik(id) {  
   switch (id) {
     case 'draaibord':
       draaiBord();
@@ -287,7 +270,7 @@ function naarHalvezet(ply) {
     if (i % 2 == 1) {
       laatsteZet += Math.round(i / 2) + "...";
     }
-    laatsteZet += plies[i].ply;
+    laatsteZet += plies[i];
     laatsteHalveZet.style.visibility = "visible";
     laatsteHalveZet.removeChild(laatsteHalveZet.firstChild);
     laatsteHalveZet.appendChild(document.createTextNode(laatsteZet));
@@ -377,7 +360,7 @@ function pgnviewer() {
       knoppen.style.cursor = "default";
     });
     $('#eerste, #vorige, #volgende, #laatste, #draaibord').on('click', function () {
-      muisklik(this.id);
+      muisKlik(this.id);
     });
     berekenCoordinaten();
   }
@@ -456,10 +439,6 @@ function schrijfPartijInfo() {
  * en de witte zet.
  */
 function schrijfPgnNaarPartijinfo(pgn) {
-  var zetNummers = new Array(),
-      witteZetten = new Array(),
-      zwarteZetten = new Array();
-
   plies = pgn.trim().split(" ");
   schrijfHoofding();
   var div = schrijfLeegPartijinfo();
@@ -472,32 +451,22 @@ function schrijfPgnNaarPartijinfo(pgn) {
   div.appendChild(alleZetten);
 
   for (var i = 0; i < plies.length; i++) {
+    var ply = document.createElement("span");
+    ply.id = i;
+    ply.className = "sleeping moves";
     if (i % 2 == 1 || i == 1) {
-      zwarteZetten.push(  plies[i])
+      ply.appendChild(document.createTextNode(plies[i]));
     } else {
-      zetNummers.push(plies[i].substr(0, plies[i].indexOf(".") + 1));
-      witteZetten.push(plies[i].substr(plies[i].indexOf(".") + 1));
+      var zetnummer = document.createElement("span");
+      zetnummer.className = "zetNummers";
+      zetnummer.appendChild(document.createTextNode(plies[i].substr(0, plies[i].indexOf(".") + 1)));
+      alleZetten.appendChild(zetnummer);
+      ply.appendChild(document.createTextNode(plies[i].substr(plies[i].indexOf(".") + 1)));
     }
+    ply.onclick = zetKlik(ply.id);
+    alleZetten.appendChild(ply);
   }
 
-  for (i = 0, var j = 0; i < zetNummers.length; i++, j += 2) {
-    var span1 = document.createElement("span");
-    span1.className = "zetNummers";
-    span1.appendChild(document.createTextNode(zetNummers[i]));
-    alleZetten.appendChild(span1);
-    var span2 = document.createElement("span");
-    span2.id = j;
-    span2.className = "sleeping moves";
-    span2.appendChild(document.createTextNode(witteZetten[i]));
-    alleZetten.appendChild(span2);
-    if (zwarteZetten[i]) {
-      var span3 = document.createElement("span");
-      span3.id = j + 1;
-      span3.className = "sleeping moves";
-      span3.appendChild(document.createTextNode(zwarteZetten[i]));
-      alleZetten.appendChild(span3);
-    }
-  }
   alleZetten.appendChild(document.createElement("br"));
   var res = document.createElement("span");
   res.id = "resultaat";
@@ -505,8 +474,6 @@ function schrijfPgnNaarPartijinfo(pgn) {
   alleZetten.appendChild(res);
 
   div.appendChild(alleZetten);
-
-  bepaalPly();
 }
 
 /**
@@ -634,5 +601,19 @@ function zetInZicht(zet) {
     container.scrollTop -= (cTop - eTop + element.clientHeight);
   } else if (eBottom > cBottom) {
     container.scrollTop += (eBottom - cBottom + element.clientHeight);
+  }
+}
+
+/**
+ * Vang de klikken op een zet op.
+ */
+function zetKlik(id) {
+  return function () {
+    for (var i = 0; i < zetten.length; i++) {
+      kleurZet(i, false);
+    }
+    halvezet = id;
+    kleurZet(halvezet, true);
+    naarHalvezet(halvezet);
   }
 }
